@@ -1,6 +1,7 @@
 const express = require("express");
 const { getTopics, getArticlesById } = require("./controllers/get");
 const { patchArticle } = require("./controllers/patch");
+const { customErrors, psqlErrors, serverErrors } = require("./error-handling");
 
 const app = express();
 app.use(express.json());
@@ -13,37 +14,16 @@ app.get("/api/articles/:article_id", getArticlesById);
 app.patch("/api/articles/:article_id", patchArticle);
 
 // 404
-app.use("/*", (req, res) => {
+app.get("/*", (req, res) => {
   res.status(404).send({ status: 404, msg: `Error: endpoint (${req.path}) not found.` });
 });
 
 // error handling
 // custom errors
-app.use((err, req, res, next) => {
-  // if we provide a custom error, process and respond
-  switch (err.status) {
-    case 404:
-      res.status(404).send({ status: 404, msg: err.msg });
-  }
-  // otherwise, continue
-  next(err);
-});
-
+app.use(customErrors);
 // PSQL errors
-app.use((err, req, res, next) => {
-  // provide a different response based on the err code given by PSQL
-  switch (err.code) {
-    case "22P02":
-      res.status(400).send({ status: 400, msg: "400: article_id must be a number" });
-  }
-  // otherwise, continue
-  next();
-});
-
+app.use(psqlErrors);
 // server errors
-app.use((err, req, res, next) => {
-  console.log(err);
-  res.status(500).send({ status: 500, msg: "Error 500: internal server" });
-});
+app.use(serverErrors);
 
 module.exports = app;
