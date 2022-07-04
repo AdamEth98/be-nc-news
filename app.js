@@ -1,5 +1,6 @@
 const express = require("express");
 const { getTopics, getArticlesById } = require("./controllers/get");
+const { patchArticle } = require("./controllers/patch");
 
 const app = express();
 app.use(express.json());
@@ -8,8 +9,11 @@ app.use(express.json());
 app.get("/api/topics", getTopics);
 app.get("/api/articles/:article_id", getArticlesById);
 
+// PATCH ROUTES
+app.patch("/api/articles/:article_id", patchArticle);
+
 // 404
-app.get("/*", (req, res) => {
+app.use("/*", (req, res) => {
   res.status(404).send({ status: 404, msg: `Error: endpoint (${req.path}) not found.` });
 });
 
@@ -38,7 +42,7 @@ app.use((err, req, res, next) => {
 
 // server errors
 app.use((err, req, res, next) => {
-  console.log("Error: 500 internal server error");
+  console.log(err);
   res.status(500).send({ status: 500, msg: "Error 500: internal server" });
 });
 
