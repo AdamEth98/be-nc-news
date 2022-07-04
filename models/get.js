@@ -18,6 +18,7 @@ exports.fetchArticlesById = (id) => {
                 `;
 
   return db.query(query, [id]).then(({ rows }) => {
-    return rows;
+    if (rows[0]) return rows[0];
+    return Promise.reject({ status: 404, msg: `404: no article found with article_id ${id}` });
   });
 };
