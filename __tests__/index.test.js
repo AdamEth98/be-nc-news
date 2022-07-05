@@ -168,6 +168,58 @@ describe("GET endpoints", () => {
       });
     });
   });
+  describe("GET /api/articles", () => {
+    it("should return a status code of 200", () => {
+      return request(app).get("/api/articles").expect(200);
+    });
+    it("should return an object with a key of articles which is an array", () => {
+      return request(app)
+        .get("/api/articles")
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.hasOwnProperty("articles")).toBe(true);
+          expect(Array.isArray(body.articles)).toBe(true);
+        });
+    });
+    it("should return all articles", () => {
+      return request(app)
+        .get("/api/articles")
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.articles.length).toBe(12);
+        });
+    });
+    it("should return all articles with the correct key:value pairs", () => {
+      return request(app)
+        .get("/api/articles")
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.articles.length).not.toBe(0);
+          body.articles.forEach((article) => {
+            expect(article).toEqual({
+              author: expect.any(String),
+              title: expect.any(String),
+              article_id: expect.any(Number),
+              topic: expect.any(String),
+              created_at: expect.any(String),
+              votes: expect.any(Number),
+              comment_count: expect.any(Number),
+            });
+          });
+        });
+    });
+    it("should return the results in descending order based on created_at", () => {
+      return request(app)
+        .get("/api/articles")
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.articles.length).not.toBe(0);
+          expect(body.articles).toBeSortedBy("created_at", {
+            descending: true,
+          });
+        });
+    });
+  });
 });
 describe("PATCH endpoints", () => {
   // test body
