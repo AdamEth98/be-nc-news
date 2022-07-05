@@ -13,11 +13,7 @@ exports.customErrors = (err, req, res, next) => {
 // PSQL errors
 exports.psqlErrors = (err, req, res, next) => {
   // provide a different response based on the err code given by PSQL
-  switch (err.code) {
-    case "22P02":
-      res.status(400).send({ status: 400, msg: "400: article_id must be a number" });
-  }
-  // otherwise, continue
+  if (err.code) res.status(400).send({ status: 400, msg: err.msg });
   next();
 };
 

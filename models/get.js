@@ -17,8 +17,17 @@ exports.fetchArticlesById = (id) => {
                   WHERE article_id = $1
                 `;
 
-  return db.query(query, [id]).then(({ rows }) => {
-    if (rows[0]) return rows[0];
-    return Promise.reject({ status: 404, msg: `404: no article found with article_id ${id}` });
-  });
+  return db
+    .query(query, [id])
+    .then(({ rows }) => {
+      if (rows[0]) return rows[0];
+      return Promise.reject({ status: 404, msg: `404: no article found with article_id ${id}` });
+    })
+    .catch((err) => {
+      // append custom error message to the PSQL error if article_id is not a number
+      if (isNaN(id + 1) && err.code === "22P02") {
+        err.msg = "400: article_id must be a number";
+      }
+      return Promise.reject(err);
+    });
 };

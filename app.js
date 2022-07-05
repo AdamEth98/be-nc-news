@@ -14,7 +14,7 @@ app.get("/api/articles/:article_id", getArticlesById);
 app.patch("/api/articles/:article_id", patchArticle);
 
 // 404
-app.get("/*", (req, res) => {
+app.get("*", (req, res) => {
   res.status(404).send({ status: 404, msg: `Error: endpoint (${req.path}) not found.` });
 });
 
