@@ -213,12 +213,32 @@ describe("GET endpoints", () => {
           .get("/api/articles/1/comments")
           .expect(200)
           .then(({ body }) => {
-            console.log(body.comments);
             expect(body.comments[0].author).toBe("jonny");
           });
       });
     });
-    describe("GET /api/articles", () => {
+    describe("error handling", () => {
+      // ADD TEST FOR WHEN ID IS VALID BUT HAS NO COMMENTS -> 200 OR 404??
+      it("should return 404 if provided a valid id that doesn't exist", () => {
+        return request(app)
+          .get("/api/articles/100/comments")
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).toBe("404: no article found with article_id 100");
+          });
+      });
+      it("should return 400 if provided an id that isn't an integer", () => {
+        return request(app)
+          .get("/api/articles/notanint/comments")
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).toBe("400: article_id must be a number");
+          });
+      });
+    });
+  });
+  describe("GET /api/articles", () => {
+    describe("api calls", () => {
       it("should return a status code of 200", () => {
         return request(app).get("/api/articles").expect(200);
       });

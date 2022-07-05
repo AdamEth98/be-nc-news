@@ -51,9 +51,18 @@ exports.fetchCommentsByArticleId = (id) => {
                   ON users.username = comments.author
                   WHERE article_id = $1
                 `;
-  return db.query(query, [id]).then(({ rows }) => {
-    return rows;
-  });
+  return db
+    .query(query, [id])
+    .then(({ rows }) => {
+      if (rows.length !== 0) return rows;
+      return Promise.reject({ status: 404, msg: `404: no article found with article_id ${id}` });
+    })
+    .catch((err) => {
+      if (isNaN(id + 1) && err.code === "22P02") {
+        err.msg = "400: article_id must be a number";
+      }
+      return Promise.reject(err);
+    });
 };
 
 exports.fetchArticles = () => {
