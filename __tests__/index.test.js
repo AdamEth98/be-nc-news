@@ -23,6 +23,15 @@ describe("GET endpoints", () => {
             expect(body.article).toEqual(expect.any(Object));
           });
       });
+      it("should correctly append a comment_count key, which is the sum of all comments related to the article_id", () => {
+        return request(app)
+          .get("/api/articles/1")
+          .expect(200)
+          .then(({ body }) => {
+            expect(body.article.hasOwnProperty("comment_count")).toBe(true);
+            expect(body.article.comment_count).toBe(11);
+          });
+      });
       it("should return a specific object based on the provided article_id paramater", () => {
         return request(app)
           .get("/api/articles/1")
@@ -36,7 +45,17 @@ describe("GET endpoints", () => {
               body: "I find this existence challenging",
               created_at: expect.any(String),
               votes: 100,
+              comment_count: 11,
             });
+          });
+      });
+      it("should return the correct value in comment_count for articles that have 0 comments", () => {
+        return request(app)
+          .get("/api/articles/2")
+          .expect(200)
+          .then(({ body }) => {
+            expect(body.article.hasOwnProperty("comment_count")).toBe(true);
+            expect(body.article.comment_count).toBe(0);
           });
       });
     });
