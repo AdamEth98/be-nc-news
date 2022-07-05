@@ -1,5 +1,5 @@
 const express = require("express");
-const { getTopics, getArticlesById } = require("./controllers/get");
+const { getTopics, getArticlesById, getUsers } = require("./controllers/get");
 const { patchArticle } = require("./controllers/patch");
 const { customErrors, psqlErrors, serverErrors } = require("./error-handling");
 
@@ -9,6 +9,7 @@ app.use(express.json());
 // GET ROUTES
 app.get("/api/topics", getTopics);
 app.get("/api/articles/:article_id", getArticlesById);
+app.get("/api/users", getUsers);
 
 // PATCH ROUTES
 app.patch("/api/articles/:article_id", patchArticle);
