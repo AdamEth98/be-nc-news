@@ -2,19 +2,15 @@
 // custom errors
 exports.customErrors = (err, req, res, next) => {
   // if we provide a custom error, process and respond
-  switch (err.status) {
-    case 404:
-      res.status(404).send({ status: 404, msg: err.msg });
-  }
-  // otherwise, continue
-  next(err);
+  if (err.status) res.status(err.status).send({ status: err.status, msg: err.msg });
+  else next(err);
 };
 
 // PSQL errors
 exports.psqlErrors = (err, req, res, next) => {
   // provide a different response based on the err code given by PSQL
   if (err.code) res.status(400).send({ status: 400, msg: err.msg });
-  next();
+  else next(err);
 };
 
 // server errors

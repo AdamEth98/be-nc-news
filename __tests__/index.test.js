@@ -86,6 +86,7 @@ describe("GET endpoints", () => {
           .get("/api/topics")
           .expect(200)
           .then(({ body }) => {
+            expect(body.topics.length > 0).toBe(true);
             body.topics.forEach((topic) => {
               expect(topic).toEqual({
                 slug: expect.any(String),
@@ -103,7 +104,7 @@ describe("PATCH endpoints", () => {
     inc_votes: 5,
   };
 
-  describe.only("PATCH /api/articles/article_id", () => {
+  describe("PATCH /api/articles/article_id", () => {
     describe("api calls", () => {
       it("should return 200", () => {
         return request(app).patch("/api/articles/1").send(updateData).expect(200);
