@@ -41,3 +41,17 @@ exports.fetchUsers = () => {
     return rows;
   });
 };
+
+exports.fetchCommentsByArticleId = (id) => {
+  const query = `
+                  SELECT comments.comment_id, comments.body, comments.votes, 
+                  users.name AS author, comments.article_id, comments.created_at
+                  FROM comments 
+                  JOIN users
+                  ON users.username = comments.author
+                  WHERE article_id = $1
+                `;
+  return db.query(query, [id]).then(({ rows }) => {
+    return rows;
+  });
+};

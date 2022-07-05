@@ -168,6 +168,57 @@ describe("GET endpoints", () => {
       });
     });
   });
+  describe("GET /api/articles/:article_id/comments", () => {
+    describe.only("api calls", () => {
+      it("should return a 200 status code", () => {
+        return request(app).get("/api/articles/1/comments").expect(200);
+      });
+      it("should return an object with a key of comments which is an array", () => {
+        return request(app)
+          .get("/api/articles/1/comments")
+          .expect(200)
+          .then(({ body }) => {
+            expect(body.hasOwnProperty("comments")).toBe(true);
+            expect(Array.isArray(body.comments)).toBe(true);
+          });
+      });
+      it("should return all comments with the same article_id as the one provided", () => {
+        return request(app)
+          .get("/api/articles/1/comments")
+          .expect(200)
+          .then(({ body }) => {
+            expect(body.comments.length).toBe(11);
+          });
+      });
+      it("should return all comments with the correct key:value pairs", () => {
+        return request(app)
+          .get("/api/articles/1/comments")
+          .expect(200)
+          .then(({ body }) => {
+            expect(body.comments.length).not.toBe(0);
+            body.comments.forEach((comment) => {
+              expect(comment).toEqual({
+                comment_id: expect.any(Number),
+                body: expect.any(String),
+                votes: expect.any(Number),
+                author: expect.any(String),
+                article_id: 1,
+                created_at: expect.any(String),
+              });
+            });
+          });
+      });
+      it("should return the correct author name from the users table", () => {
+        return request(app)
+          .get("/api/articles/1/comments")
+          .expect(200)
+          .then(({ body }) => {
+            console.log(body.comments);
+            expect(body.comments[0].author).toBe("jonny");
+          });
+      });
+    });
+  });
 });
 describe("PATCH endpoints", () => {
   // test body
