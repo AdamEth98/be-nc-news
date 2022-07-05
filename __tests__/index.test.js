@@ -97,6 +97,43 @@ describe("GET endpoints", () => {
       });
     });
   });
+  describe("GET /api/users", () => {
+    it("should return a status code of 200", () => {
+      return request(app).get("/api/users").expect(200);
+    });
+    it("should return an object with a key of users which is an array", () => {
+      return request(app)
+        .get("/api/users")
+        .expect(200)
+        .then(({ body }) => {
+          expect(body).toHaveProperty("users");
+          expect(Array.isArray(body.users)).toBe(true);
+        });
+    });
+    it("should return all objects from the users table", () => {
+      return request(app)
+        .get("/api/users")
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.users.length).toBe(4);
+        });
+    });
+    it("should return all objects full populated with the correct keys and value types", () => {
+      return request(app)
+        .get("/api/users")
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.users.length > 0).toBe(true);
+          body.users.forEach((user) => {
+            expect(user).toEqual({
+              username: expect.any(String),
+              name: expect.any(String),
+              avatar_url: expect.any(String),
+            });
+          });
+        });
+    });
+  });
 });
 describe("PATCH endpoints", () => {
   // test body
