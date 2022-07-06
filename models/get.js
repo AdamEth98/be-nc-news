@@ -1,5 +1,5 @@
 const db = require("../db/connection");
-const { checkArticleExists } = require("../utils/query-helpers");
+const { checkArticleExists, checkTopicExists } = require("../utils/query-helpers");
 const format = require("pg-format");
 
 // should return all topics as an array
@@ -76,28 +76,30 @@ exports.fetchCommentsByArticleId = (id) => {
     });
 };
 
-exports.fetchArticles = (sort = "created_at", order = "DESC", topic = "%") => {
-  let query = format(
-    `
-                  SELECT users.name AS author, articles.title, articles.article_id, 
-                    articles.topic, articles.created_at, articles.votes,
-                      COUNT(comments.article_id)::int AS comment_count
-                  FROM articles
-                  LEFT JOIN comments 
+exports.fetchArticles = (sort = "created_at", order = "DESC", topic) => {
+  let query = `
+                SELECT users.name AS author, articles.title, articles.article_id, 
+                  articles.topic, articles.created_at, articles.votes,
+                    COUNT(comments.article_id)::int AS comment_count
+                FROM articles
+                LEFT JOIN comments 
                   ON comments.article_id = articles.article_id
-                  JOIN users 
+                JOIN users 
                   ON users.username = articles.author
-                  WHERE articles.topic LIKE %3$L
-                  GROUP BY articles.article_id, users.name
-                  ORDER BY articles.%1$I %2$s
-                `,
-    sort,
-    order,
-    topic
-  );
+              `;
 
-  return db
-    .query(query)
+  return checkTopicExists(topic)
+    .then((result) => {
+      if (topic) {
+        if (!result) return Promise.reject({ status: 404, msg: `404: no topic found with slug '${topic}'` });
+        query += `WHERE articles.topic LIKE %3$L `;
+      }
+
+      query += `GROUP BY articles.article_id, users.name
+                ORDER BY articles.%1$I %2$s`;
+
+      return db.query(format(query, sort, order, topic));
+    })
     .then(({ rows }) => {
       return rows;
     })

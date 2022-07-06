@@ -78,7 +78,6 @@ describe("GET endpoints", () => {
       });
     });
   });
-
   describe("GET /api/topics", () => {
     describe("api calls", () => {
       it("should respond with a status code of 200", () => {
@@ -298,7 +297,7 @@ describe("GET endpoints", () => {
           });
       });
     });
-    describe("url queries", () => {
+    describe("/api/articles queries", () => {
       it("works with multiple queries at once", () => {
         return request(app)
           .get("/api/articles?sort_by=votes&order=ASC&topic=mitch")
@@ -306,6 +305,7 @@ describe("GET endpoints", () => {
           .then(({ body }) => {
             expect(body.articles.length).toBe(11);
             expect(body.articles).toBeSortedBy("votes");
+            body.articles.forEach((article) => expect(article.topic).toBe("mitch"));
           });
       });
       describe("sort_by", () => {
@@ -375,13 +375,23 @@ describe("GET endpoints", () => {
               expect(body.articles[0].topic).toBe("cats");
             });
         });
-        it("returns 200 and an empty array if no topics are found", () => {
+        it("returns 200 and an empty array the topic exists but has no associated articles", () => {
           return request(app)
-            .get("/api/articles?topic=notatopic")
+            .get("/api/articles?topic=paper")
             .expect(200)
             .then(({ body }) => {
               expect(body.articles.length).toBe(0);
             });
+        });
+        describe("error handling", () => {
+          it("returns 404 if the topic does not exist in the topics table", () => {
+            return request(app)
+              .get("/api/articles?topic=notatopic")
+              .expect(404)
+              .then(({ body }) => {
+                expect(body.msg).toBe("404: no topic found with slug 'notatopic'");
+              });
+          });
         });
       });
     });
