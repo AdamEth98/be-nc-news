@@ -631,7 +631,7 @@ describe("POST endpoints", () => {
   });
 });
 describe("DELETE endpoints", () => {
-  describe.only("DELETE /api/comments/:comment_id", () => {
+  describe("DELETE /api/comments/:comment_id", () => {
     it("returns a status code of 204", () => {
       return request(app).delete("/api/comments/1").expect(204);
     });
