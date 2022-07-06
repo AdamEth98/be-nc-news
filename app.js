@@ -1,6 +1,7 @@
 const express = require("express");
 const { getTopics, getArticlesById, getUsers, getCommentsByArticleId, getArticles } = require("./controllers/get");
 const { patchArticle } = require("./controllers/patch");
+const { postComment } = require("./controllers/post");
 const { customErrors, psqlErrors, serverErrors } = require("./error-handling");
 
 const app = express();
@@ -15,6 +16,9 @@ app.get("/api/articles", getArticles);
 
 // PATCH ROUTES
 app.patch("/api/articles/:article_id", patchArticle);
+
+// POST ROUTES
+app.post("/api/articles/:article_id/comments", postComment);
 
 // 404
 app.get("*", (req, res) => {
