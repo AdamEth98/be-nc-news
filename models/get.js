@@ -42,6 +42,38 @@ exports.fetchUsers = () => {
   });
 };
 
+exports.fetchCommentsByArticleId = (id) => {
+  // pre check to see if ID exists, for custom errors
+  return checkArticleExists(id)
+    .then((result) => {
+      if (!result) {
+        return Promise.reject({ status: 404, msg: `404: no article found with article_id ${id}` });
+      }
+      // if so, continue and make the main query
+      const query = `
+                    SELECT comments.comment_id, comments.body, comments.votes, 
+                    users.name AS author, comments.article_id, comments.created_at
+                    FROM comments 
+                    JOIN users
+                    ON users.username = comments.author
+                    WHERE article_id = $1
+                  `;
+      return db.query(query, [id]);
+    })
+    .then(({ rows }) => {
+      if (rows.length !== 0) return rows;
+
+      // if rows is empty, then no comments with this article_id
+      return Promise.reject({ status: 404, msg: `404: no comments found for article_id ${id}` });
+    })
+    .catch((err) => {
+      if (isNaN(id + 1) && err.code === "22P02") {
+        err.msg = "400: article_id must be a number";
+      }
+      return Promise.reject(err);
+    });
+};
+
 exports.fetchArticles = () => {
   const query = `
                   SELECT users.name AS author, articles.title, articles.article_id, 
@@ -57,5 +89,11 @@ exports.fetchArticles = () => {
                 `;
   return db.query(query).then(({ rows }) => {
     return rows;
+  });
+};
+
+const checkArticleExists = (id) => {
+  return db.query("SELECT * FROM articles WHERE article_id = $1", [id]).then(({ rowCount }) => {
+    return rowCount ? true : false;
   });
 };
