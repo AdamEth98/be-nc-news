@@ -1,5 +1,6 @@
 const db = require("../db/connection");
 const { checkArticleExists } = require("../utils/query-helpers");
+const format = require("pg-format");
 
 // should return all topics as an array
 exports.fetchTopics = () => {
@@ -75,20 +76,34 @@ exports.fetchCommentsByArticleId = (id) => {
     });
 };
 
-exports.fetchArticles = () => {
-  const query = `
+exports.fetchArticles = (sort = "created_at", order = "DESC", topic = "%") => {
+  let query = format(
+    `
                   SELECT users.name AS author, articles.title, articles.article_id, 
-                     articles.topic, articles.created_at, articles.votes,
+                    articles.topic, articles.created_at, articles.votes,
                       COUNT(comments.article_id)::int AS comment_count
                   FROM articles
                   LEFT JOIN comments 
-                    ON comments.article_id = articles.article_id
+                  ON comments.article_id = articles.article_id
                   JOIN users 
-                    ON users.username = articles.author
+                  ON users.username = articles.author
+                  WHERE articles.topic LIKE %3$L
                   GROUP BY articles.article_id, users.name
-                  ORDER BY articles.created_at DESC
-                `;
-  return db.query(query).then(({ rows }) => {
-    return rows;
-  });
+                  ORDER BY articles.%1$I %2$s
+                `,
+    sort,
+    order,
+    topic
+  );
+
+  return db
+    .query(query)
+    .then(({ rows }) => {
+      return rows;
+    })
+    .catch((err) => {
+      if (err.code === "42703") err.msg = "400: invalid sort_by query";
+      if (err.code === "42601") err.msg = "400: invalid order query";
+      return Promise.reject(err);
+    });
 };
