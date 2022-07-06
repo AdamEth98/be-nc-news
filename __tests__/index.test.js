@@ -227,6 +227,14 @@ describe("GET endpoints", () => {
             expect(body.msg).toBe("404: no article found with article_id 100");
           });
       });
+      it("should return 404 if the requested article has no comments", () => {
+        return request(app)
+          .get("/api/articles/2/comments")
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).toBe("404: no comments found for article_id 2");
+          });
+      });
       it("should return 400 if provided an id that isn't an integer", () => {
         return request(app)
           .get("/api/articles/notanint/comments")
