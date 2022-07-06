@@ -420,7 +420,6 @@ describe("PATCH endpoints", () => {
     });
   });
 });
-
 describe("POST endpoints", () => {
   describe("POST /api/articles/:article_id/comments", () => {
     const postData = { username: "butter_bridge", body: "aaa" };
@@ -529,6 +528,61 @@ describe("POST endpoints", () => {
           .expect(400)
           .then(({ body }) => {
             expect(body.msg).toBe("400: request body must be {username: [string], body: [string]}");
+          });
+      });
+    });
+  });
+});
+describe("DELETE endpoints", () => {
+  describe.only("DELETE /api/comments/:comment_id", () => {
+    it("returns a status code of 204", () => {
+      return request(app).delete("/api/comments/1").expect(204);
+    });
+    it("returns an empty body", () => {
+      return request(app)
+        .delete("/api/comments/1")
+        .expect(204)
+        .then(({ body }) => {
+          expect(Object.keys(body).length).toBe(0);
+        });
+    });
+    it("removes a comment from the db based on the provided id, if suitable", () => {
+      return request(app)
+        .delete("/api/comments/1")
+        .expect(204)
+        .then(({ body }) => {
+          return db.query("SELECT * from comments WHERE comment_id = 1");
+        })
+        .then(({ rowCount }) => {
+          expect(rowCount).toBe(0);
+        });
+    });
+    it("works with repeated calls", () => {
+      return request(app)
+        .delete("/api/comments/1")
+        .expect(204)
+        .then(({ body }) => {
+          return db.query("SELECT * from comments WHERE comment_id = 1");
+        })
+        .then(({ rowCount }) => {
+          expect(rowCount).toBe(0);
+          // make another api call
+          return request(app).delete("/api/comments/1").expect(204);
+        })
+        .then(({ body }) => {
+          return db.query("SELECT * from comments WHERE comment_id = 1");
+        })
+        .then(({ rowCount }) => {
+          expect(rowCount).toBe(0);
+        });
+    });
+    describe("error handling", () => {
+      it("returns 400 if the comment_id is of the wrong type", () => {
+        return request(app)
+          .delete("/api/comments/notanint")
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).toBe("400: comment_id must be a number");
           });
       });
     });
