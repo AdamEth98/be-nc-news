@@ -423,9 +423,9 @@ describe("PATCH endpoints", () => {
 
 describe("POST endpoints", () => {
   describe("POST /api/articles/:article_id/comments", () => {
+    const postData = { username: "butter_bridge", body: "aaa" };
     describe("api calls / post", () => {
       // test data
-      const postData = { username: "butter_bridge", body: "aaa" };
 
       it("should return a 201 status code", () => {
         return request(app).post("/api/articles/2/comments").send(postData).expect(201);
@@ -482,6 +482,53 @@ describe("POST endpoints", () => {
               created_at: expect.any(Date),
               comment_id: expect.any(Number),
             });
+          });
+      });
+    });
+    describe("error handling", () => {
+      it("returns a 404 if the article_id does not exist", () => {
+        return request(app)
+          .post("/api/articles/99/comments")
+          .send(postData)
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).toBe("404: no article with article_id 99");
+          });
+      });
+      it("returns 400 if the article_id is not a number", () => {
+        return request(app)
+          .post("/api/articles/notanint/comments")
+          .send(postData)
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).toBe("400: article_id must be a number");
+          });
+      });
+      it("returns 400 if the body is empty", () => {
+        return request(app)
+          .post("/api/articles/2/comments")
+          .send({})
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).toBe("400: request body must be {username: [string], body: [string]}");
+          });
+      });
+      it("returns 400 if the body is not empty but does not have the right keys", () => {
+        return request(app)
+          .post("/api/articles/2/comments")
+          .send({ key1: "aaa", key2: 88 })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).toBe("400: request body must be {username: [string], body: [string]}");
+          });
+      });
+      it("returns 400 if the body has username & body but either is of the wrong type", () => {
+        return request(app)
+          .post("/api/articles/2/comments")
+          .send({ key1: "aaa", key2: 88 })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).toBe("400: request body must be {username: [string], body: [string]}");
           });
       });
     });

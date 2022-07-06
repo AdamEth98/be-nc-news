@@ -1,4 +1,5 @@
 const db = require("../db/connection");
+const { checkArticleExists } = require("../utils/query-helpers");
 
 // should return all topics as an array
 exports.fetchTopics = () => {
@@ -89,11 +90,5 @@ exports.fetchArticles = () => {
                 `;
   return db.query(query).then(({ rows }) => {
     return rows;
-  });
-};
-
-const checkArticleExists = (id) => {
-  return db.query("SELECT * FROM articles WHERE article_id = $1", [id]).then(({ rowCount }) => {
-    return rowCount ? true : false;
   });
 };
