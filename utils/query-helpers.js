@@ -11,3 +11,14 @@ exports.checkArticleExists = (id) => {
       return Promise.reject(err);
     });
 };
+
+exports.checkTopicExists = (slug) => {
+  return db
+    .query("SELECT * FROM topics WHERE slug = $1", [slug])
+    .then(({ rowCount }) => {
+      return rowCount ? true : false;
+    })
+    .catch((err) => {
+      return Promise.reject(err);
+    });
+};

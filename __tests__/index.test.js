@@ -78,7 +78,6 @@ describe("GET endpoints", () => {
       });
     });
   });
-
   describe("GET /api/topics", () => {
     describe("api calls", () => {
       it("should respond with a status code of 200", () => {
@@ -286,7 +285,7 @@ describe("GET endpoints", () => {
             });
           });
       });
-      it("should return the results in descending order based on created_at", () => {
+      it("should return the results in descending order based on date by default", () => {
         return request(app)
           .get("/api/articles")
           .expect(200)
@@ -296,6 +295,104 @@ describe("GET endpoints", () => {
               descending: true,
             });
           });
+      });
+    });
+    describe("/api/articles queries", () => {
+      it("works with multiple queries at once", () => {
+        return request(app)
+          .get("/api/articles?sort_by=votes&order=ASC&topic=mitch")
+          .expect(200)
+          .then(({ body }) => {
+            expect(body.articles.length).toBe(11);
+            expect(body.articles).toBeSortedBy("votes");
+            body.articles.forEach((article) => expect(article.topic).toBe("mitch"));
+          });
+      });
+      describe("sort_by", () => {
+        it("should accept a sort_by query, which correctly sorts in descending order (by default)", () => {
+          return request(app)
+            .get("/api/articles?sort_by=votes")
+            .expect(200)
+            .then(({ body }) => {
+              expect(body.articles.length).not.toBe(0);
+              expect(body.articles).toBeSortedBy("votes", {
+                descending: true,
+              });
+            });
+        });
+        it("should allow sorting by any article property", () => {
+          return request(app)
+            .get("/api/articles?sort_by=title")
+            .expect(200)
+            .then(({ body }) => {
+              expect(body.articles.length).not.toBe(0);
+              expect(body.articles).toBeSortedBy("title", {
+                descending: true,
+              });
+            });
+        });
+        describe("error handling", () => {
+          it("should return 400 if given an invalid sort_by query", () => {
+            return request(app)
+              .get("/api/articles?sort_by=notvalid")
+              .expect(400)
+              .then(({ body }) => {
+                expect(body.msg).toBe("400: invalid sort_by query");
+              });
+          });
+        });
+      });
+      describe("order", () => {
+        it("allows changing the order (asc/desc) based on a valid query", () => {
+          return request(app)
+            .get("/api/articles?order=ASC")
+            .expect(200)
+            .then(({ body }) => {
+              expect(body.articles.length).not.toBe(0);
+              expect(body.articles).toBeSortedBy("created_at", {
+                ascending: true,
+              });
+            });
+        });
+        describe("error handling", () => {
+          it("returns 400 if given an invalid error query", () => {
+            return request(app)
+              .get("/api/articles?order=notvalid")
+              .expect(400)
+              .then(({ body }) => {
+                expect(body.msg).toBe("400: invalid order query");
+              });
+          });
+        });
+      });
+      describe("topic", () => {
+        it("allows filtering based on a topic query", () => {
+          return request(app)
+            .get("/api/articles?topic=cats")
+            .expect(200)
+            .then(({ body }) => {
+              expect(body.articles.length).toBe(1);
+              expect(body.articles[0].topic).toBe("cats");
+            });
+        });
+        it("returns 200 and an empty array the topic exists but has no associated articles", () => {
+          return request(app)
+            .get("/api/articles?topic=paper")
+            .expect(200)
+            .then(({ body }) => {
+              expect(body.articles.length).toBe(0);
+            });
+        });
+        describe("error handling", () => {
+          it("returns 404 if the topic does not exist in the topics table", () => {
+            return request(app)
+              .get("/api/articles?topic=notatopic")
+              .expect(404)
+              .then(({ body }) => {
+                expect(body.msg).toBe("404: no topic found with slug 'notatopic'");
+              });
+          });
+        });
       });
     });
   });
