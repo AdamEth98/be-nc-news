@@ -299,123 +299,190 @@ describe("GET endpoints", () => {
       });
     });
   });
-  describe("PATCH endpoints", () => {
-    // test body
-    const updateData = {
-      inc_votes: 5,
-    };
+});
+describe("PATCH endpoints", () => {
+  // test body
+  const updateData = {
+    inc_votes: 5,
+  };
 
-    describe("PATCH /api/articles/article_id", () => {
-      describe("api calls", () => {
-        it("should return 200", () => {
-          return request(app).patch("/api/articles/1").send(updateData).expect(200);
-        });
-        it("should return an object based on the provided id", () => {
-          return request(app)
-            .patch("/api/articles/1")
-            .send(updateData)
-            .expect(200)
-            .then(({ body }) => {
-              expect(body.article.article_id).toEqual(1);
-            });
-        });
-        it("should correctly increment the votes value of the specified row when given a positive number", () => {
-          return request(app)
-            .patch("/api/articles/1")
-            .send(updateData)
-            .expect(200)
-            .then(({ body }) => {
-              expect(body.article.votes).toEqual(105);
-            });
-        });
-        it("should correctly decrement the votes value of the specified row when given a negative number", () => {
-          return request(app)
-            .patch("/api/articles/1")
-            .send({ inc_votes: -5 })
-            .expect(200)
-            .then(({ body }) => {
-              expect(body.article.votes).toEqual(95);
-            });
-        });
-        it("should ignore irrelevant keys providing there is a key inc_votes", () => {
-          return request(app)
-            .patch("/api/articles/1")
-            .send({ author: "adam", inc_votes: 1 })
-            .expect(200)
-            .then(() => {
-              return db.query("SELECT * FROM articles WHERE article_id = 1");
-            })
-            .then(({ rows }) => {
-              expect(rows[0].author).not.toBe("adam");
-            });
-        });
-        it("should return a fully populated object with the updated value", () => {
-          return request(app)
-            .patch("/api/articles/1")
-            .send(updateData)
-            .expect(200)
-            .then(({ body }) => {
-              expect(body.article).toEqual({
-                author: "butter_bridge",
-                title: "Living in the shadow of a great man",
-                article_id: 1,
-                topic: "mitch",
-                body: "I find this existence challenging",
-                created_at: expect.any(String),
-                votes: 105,
-              });
-            });
-        });
-        it("should correctly update the value in the database", () => {
-          return request(app)
-            .patch("/api/articles/1")
-            .send(updateData)
-            .expect(200)
-            .then(() => {
-              return db.query("SELECT * FROM articles WHERE article_id = 1");
-            })
-            .then(({ rows }) => {
-              expect(rows[0].votes).toBe(105);
-            });
-        });
+  describe("PATCH /api/articles/article_id", () => {
+    describe("api calls", () => {
+      it("should return 200", () => {
+        return request(app).patch("/api/articles/1").send(updateData).expect(200);
       });
-      describe("error handling", () => {
-        it("should return 404 if provided a valid id that does not exist", () => {
-          return request(app)
-            .patch("/api/articles/999")
-            .send(updateData)
-            .expect(404)
-            .then(({ body }) => {
-              expect(body.msg).toBe("404: no article found with article_id 999");
+      it("should return an object based on the provided id", () => {
+        return request(app)
+          .patch("/api/articles/1")
+          .send(updateData)
+          .expect(200)
+          .then(({ body }) => {
+            expect(body.article.article_id).toEqual(1);
+          });
+      });
+      it("should correctly increment the votes value of the specified row when given a positive number", () => {
+        return request(app)
+          .patch("/api/articles/1")
+          .send(updateData)
+          .expect(200)
+          .then(({ body }) => {
+            expect(body.article.votes).toEqual(105);
+          });
+      });
+      it("should correctly decrement the votes value of the specified row when given a negative number", () => {
+        return request(app)
+          .patch("/api/articles/1")
+          .send({ inc_votes: -5 })
+          .expect(200)
+          .then(({ body }) => {
+            expect(body.article.votes).toEqual(95);
+          });
+      });
+      it("should ignore irrelevant keys providing there is a key inc_votes", () => {
+        return request(app)
+          .patch("/api/articles/1")
+          .send({ author: "adam", inc_votes: 1 })
+          .expect(200)
+          .then(() => {
+            return db.query("SELECT * FROM articles WHERE article_id = 1");
+          })
+          .then(({ rows }) => {
+            expect(rows[0].author).not.toBe("adam");
+          });
+      });
+      it("should return a fully populated object with the updated value", () => {
+        return request(app)
+          .patch("/api/articles/1")
+          .send(updateData)
+          .expect(200)
+          .then(({ body }) => {
+            expect(body.article).toEqual({
+              author: "butter_bridge",
+              title: "Living in the shadow of a great man",
+              article_id: 1,
+              topic: "mitch",
+              body: "I find this existence challenging",
+              created_at: expect.any(String),
+              votes: 105,
             });
-        });
-        it("should return 400 if the given id is not an integer", () => {
-          return request(app)
-            .patch("/api/articles/notanint")
-            .send(updateData)
-            .expect(400)
-            .then(({ body }) => {
-              expect(body.msg).toBe("400: article_id must be a number");
+          });
+      });
+      it("should correctly update the value in the database", () => {
+        return request(app)
+          .patch("/api/articles/1")
+          .send(updateData)
+          .expect(200)
+          .then(() => {
+            return db.query("SELECT * FROM articles WHERE article_id = 1");
+          })
+          .then(({ rows }) => {
+            expect(rows[0].votes).toBe(105);
+          });
+      });
+    });
+    describe("error handling", () => {
+      it("should return 404 if provided a valid id that does not exist", () => {
+        return request(app)
+          .patch("/api/articles/999")
+          .send(updateData)
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).toBe("404: no article found with article_id 999");
+          });
+      });
+      it("should return 400 if the given id is not an integer", () => {
+        return request(app)
+          .patch("/api/articles/notanint")
+          .send(updateData)
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).toBe("400: article_id must be a number");
+          });
+      });
+      it("should return 400 if provided an empty body", () => {
+        return request(app)
+          .patch("/api/articles/1")
+          .send({})
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).toBe("400: must provide a body in the patch request - {inc_votes: [number]}");
+          });
+      });
+      it("should return 400 if inc_votes is not a number", () => {
+        return request(app)
+          .patch("/api/articles/1")
+          .send({ inc_votes: "notanumber" })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).toBe("400: inc_votes must be of type number");
+          });
+      });
+    });
+  });
+});
+
+describe("POST endpoints", () => {
+  describe("POST /api/articles/:article_id/comments", () => {
+    describe("api calls / post", () => {
+      // test data
+      const postData = { username: "butter_bridge", body: "aaa" };
+
+      it("should return a 201 status code", () => {
+        return request(app).post("/api/articles/2/comments").send(postData).expect(201);
+      });
+      it("should return a new comment when provided a suitable body", () => {
+        return request(app)
+          .post("/api/articles/2/comments")
+          .send(postData)
+          .expect(201)
+          .then(({ body }) => {
+            expect(body.comment).toEqual({
+              article_id: 2,
+              votes: 0,
+              author: "butter_bridge",
+              body: "aaa",
+              created_at: expect.any(String),
+              comment_id: expect.any(Number),
             });
-        });
-        it("should return 400 if provided an empty body", () => {
-          return request(app)
-            .patch("/api/articles/1")
-            .send({})
-            .expect(400)
-            .then(({ body }) => {
-              expect(body.msg).toBe("400: must provide a body in the patch request - {inc_votes: [number]}");
+          });
+      });
+      it("correctly creates a new row in the db with the new comment", () => {
+        return request(app)
+          .post("/api/articles/2/comments")
+          .send(postData)
+          .expect(201)
+          .then(({ body }) => {
+            return db.query("SELECT * FROM comments WHERE article_id = 2");
+          })
+          .then((result) => {
+            expect(result.rows[0]).toEqual({
+              article_id: 2,
+              votes: 0,
+              author: "butter_bridge",
+              body: "aaa",
+              created_at: expect.any(Date),
+              comment_id: expect.any(Number),
             });
-        });
-        it("should return 400 if inc_votes is not a number", () => {
-          return request(app)
-            .patch("/api/articles/1")
-            .send({ inc_votes: "notanumber" })
-            .expect(400)
-            .then(({ body }) => {
-              expect(body.msg).toBe("400: inc_votes must be of type number");
+          });
+      });
+      it("correctly ignores irrelevant keys providing there's a suitable body & username", () => {
+        return request(app)
+          .post("/api/articles/2/comments")
+          .send({ ...postData, randomKey: 22 })
+          .expect(201)
+          .then(({ body }) => {
+            return db.query("SELECT * FROM comments WHERE article_id = 2");
+          })
+          .then((result) => {
+            expect(result.rows[0]).toEqual({
+              article_id: 2,
+              votes: 0,
+              author: "butter_bridge",
+              body: "aaa",
+              created_at: expect.any(Date),
+              comment_id: expect.any(Number),
             });
-        });
+          });
       });
     });
   });
