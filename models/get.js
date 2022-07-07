@@ -1,6 +1,8 @@
 const db = require("../db/connection");
 const { checkArticleExists, checkTopicExists } = require("../utils/query-helpers");
 const format = require("pg-format");
+const fs = require("fs/promises");
+const { nextTick } = require("process");
 
 // should return all topics as an array
 exports.fetchTopics = () => {
@@ -106,6 +108,18 @@ exports.fetchArticles = (sort = "created_at", order = "DESC", topic) => {
     .catch((err) => {
       if (err.code === "42703") err.msg = "400: invalid sort_by query";
       if (err.code === "42601") err.msg = "400: invalid order query";
+      return Promise.reject(err);
+    });
+};
+
+exports.fetchApi = () => {
+  return fs
+    .readFile(`${__dirname}/../endpoints.json`, "utf-8")
+    .then((contents) => {
+      const data = JSON.parse(contents);
+      return data;
+    })
+    .catch((err) => {
       return Promise.reject(err);
     });
 };
