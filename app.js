@@ -1,4 +1,5 @@
 const express = require("express");
+const { deleteComment } = require("./controllers/delete");
 const { getTopics, getArticlesById, getUsers, getCommentsByArticleId, getArticles } = require("./controllers/get");
 const { patchArticle } = require("./controllers/patch");
 const { postComment } = require("./controllers/post");
@@ -19,6 +20,9 @@ app.patch("/api/articles/:article_id", patchArticle);
 
 // POST ROUTES
 app.post("/api/articles/:article_id/comments", postComment);
+
+// DELETE ROUTES
+app.delete("/api/comments/:comment_id", deleteComment);
 
 // 404
 app.get("*", (req, res) => {

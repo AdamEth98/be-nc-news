@@ -517,7 +517,6 @@ describe("PATCH endpoints", () => {
     });
   });
 });
-
 describe("POST endpoints", () => {
   describe("POST /api/articles/:article_id/comments", () => {
     const postData = { username: "butter_bridge", body: "aaa" };
@@ -626,6 +625,69 @@ describe("POST endpoints", () => {
           .expect(400)
           .then(({ body }) => {
             expect(body.msg).toBe("400: request body must be {username: [string], body: [string]}");
+          });
+      });
+    });
+  });
+});
+describe("DELETE endpoints", () => {
+  describe("DELETE /api/comments/:comment_id", () => {
+    it("returns a status code of 204", () => {
+      return request(app).delete("/api/comments/1").expect(204);
+    });
+    it("returns an empty body", () => {
+      return request(app)
+        .delete("/api/comments/1")
+        .expect(204)
+        .then(({ body }) => {
+          expect(body).toEqual({});
+        });
+    });
+    it("removes a comment from the db based on the provided id, if suitable", () => {
+      return request(app)
+        .delete("/api/comments/1")
+        .expect(204)
+        .then(() => {
+          // make DELETE call, then make sure the comment with id 1 is no longer in the db
+          return db.query("SELECT * FROM comments WHERE comment_id = 1");
+        })
+        .then(({ rowCount }) => {
+          expect(!rowCount).toBe(true);
+        });
+    });
+    describe("error handling", () => {
+      it("returns 400 if the comment_id is of the wrong type", () => {
+        return request(app)
+          .delete("/api/comments/notanint")
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).toBe("400: comment_id must be a number");
+          });
+      });
+      it("returns 404 if trying to delete a comment that does not exist", () => {
+        // make sure comment is there
+        return request(app)
+          .delete("/api/comments/999")
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).toEqual("404: no comment found with id 999");
+          });
+      });
+      it("returns 404 if trying to delete a comment that has already been deleted", () => {
+        // make sure comment is there
+        return request(app)
+          .get("/api/articles/6/comments")
+          .expect(200)
+          .then(({ body }) => {
+            expect(body.comments.length).toBe(1);
+            return request(app).delete("/api/comments/16").expect(204);
+          })
+          .then(({ body }) => {
+            return request(app).delete("/api/comments/16").expect(404);
+          })
+          .then(({ body }) => {
+            // expect 404, meaning successful deletion
+            expect(body.msg).toEqual("404: no comment found with id 16");
           });
       });
     });
