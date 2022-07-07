@@ -5,14 +5,15 @@ const { postComment } = require("../controllers/post");
 const router = require("express").Router();
 
 // GET
-router.get("/:article_id", getArticlesById);
-router.get("/:article_id/comments", getCommentsByArticleId);
-router.get("/", getArticles);
+router
+  .get("/:article_id", getArticlesById)
+  .get("/:article_id/comments", getCommentsByArticleId)
+  .get("/", getArticles)
 
-// PATCH
-router.patch("/:article_id", patchArticle);
+  // PATCH
+  .patch("/:article_id", patchArticle)
 
-// POST
-router.post("/:article_id/comments", postComment);
+  // POST
+  .post("/:article_id/comments", postComment);
 
 module.exports = router;
