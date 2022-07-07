@@ -396,6 +396,27 @@ describe("GET endpoints", () => {
       });
     });
   });
+  describe("GET /api", () => {
+    it("returns a 200 status code", () => {
+      return request(app).get("/api").expect(200);
+    });
+    it("returns an object with a key of endpoints", () => {
+      return request(app)
+        .get("/api")
+        .expect(200)
+        .then(({ body }) => {
+          expect(body).toHaveProperty("endpoints");
+        });
+    });
+    it("returns an object with 9 keys, one for each of the apps endpoints", () => {
+      return request(app)
+        .get("/api")
+        .expect(200)
+        .then(({ body }) => {
+          expect(Object.keys(body.endpoints).length).toBe(9);
+        });
+    });
+  });
 });
 describe("PATCH endpoints", () => {
   // test body
