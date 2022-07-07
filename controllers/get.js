@@ -4,8 +4,8 @@ const {
   fetchUsers,
   fetchCommentsByArticleId,
   fetchArticles,
-  fetchApi,
 } = require("../models/get");
+const endpoints = require("../endpoints.json");
 
 exports.getTopics = (req, res, next) => {
   fetchTopics()
@@ -61,11 +61,5 @@ exports.getArticles = (req, res, next) => {
 };
 
 exports.getApi = (req, res, next) => {
-  fetchApi()
-    .then((endpoints) => {
-      res.status(200).send({ endpoints });
-    })
-    .catch((err) => {
-      next(err);
-    });
+  res.status(200).send({ endpoints });
 };
