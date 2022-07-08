@@ -4,6 +4,7 @@ const {
   fetchUsers,
   fetchCommentsByArticleId,
   fetchArticles,
+  fetchUserByUsername,
 } = require("../models/get");
 const endpoints = require("../endpoints.json");
 
@@ -13,7 +14,7 @@ exports.getTopics = (req, res, next) => {
       res.status(200).send({ topics });
     })
     .catch((err) => {
-      next();
+      next(err);
     });
 };
 
@@ -54,6 +55,17 @@ exports.getArticles = (req, res, next) => {
   fetchArticles(sort_by, order, topic)
     .then((articles) => {
       res.status(200).send({ articles });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
+
+exports.getUserByUsername = (req, res, next) => {
+  const { username } = req.params;
+  fetchUserByUsername(username)
+    .then((user) => {
+      res.status(200).send({ user });
     })
     .catch((err) => {
       next(err);
