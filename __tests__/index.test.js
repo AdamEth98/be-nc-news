@@ -467,11 +467,11 @@ describe("GET endpoints", () => {
 });
 describe("PATCH endpoints", () => {
   // test body
-  const updateData = {
-    inc_votes: 5,
-  };
 
   describe("PATCH /api/articles/article_id", () => {
+    const updateData = {
+      inc_votes: 5,
+    };
     describe("api calls", () => {
       it("should return 200", () => {
         return request(app).patch("/api/articles/1").send(updateData).expect(200);
@@ -580,6 +580,95 @@ describe("PATCH endpoints", () => {
           .expect(400)
           .then(({ body }) => {
             expect(body.msg).toBe("400: inc_votes must be of type number");
+          });
+      });
+    });
+  });
+  describe.only("PATCH /api/comments/comment_id", () => {
+    const testData = {
+      inc_votes: 10,
+    };
+    const firstComment = {
+      body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+      votes: 16,
+      author: "butter_bridge",
+      article_id: 9,
+      created_at: 1586179020000,
+    };
+    describe("api calls", () => {
+      it("should return 200", () => {
+        return request(app).patch("/api/comments/1").send(testData).expect(200);
+      });
+      it("should return an object based on the given id", () => {
+        return request(app)
+          .patch("/api/comments/1")
+          .send(testData)
+          .expect(200)
+          .then(({ body }) => {
+            expect(body.comment).toEqual({
+              comment_id: 1,
+              body: firstComment.body,
+              votes: expect.any(Number),
+              author: firstComment.author,
+              article_id: firstComment.article_id,
+              created_at: expect.any(String),
+            });
+          });
+      });
+      it("should correctly increment the value of votes when given a positive number", () => {
+        return request(app)
+          .patch("/api/comments/1")
+          .send(testData)
+          .expect(200)
+          .then(({ body }) => {
+            expect(body.comment.votes).toBe(26);
+          });
+      });
+      it("should correctly increment the value of votes when given a negative number", () => {
+        return request(app)
+          .patch("/api/comments/1")
+          .send({ inc_votes: -10 })
+          .expect(200)
+          .then(({ body }) => {
+            expect(body.comment.votes).toBe(6);
+          });
+      });
+    });
+    describe("error handling", () => {
+      it("should return 404 if the id is valid but non-existing", () => {
+        return request(app)
+          .patch("/api/comments/100")
+          .send(testData)
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).toBe("404: no comment with id 100");
+          });
+      });
+      it("should return 400 if the id is not a number", () => {
+        return request(app)
+          .patch("/api/comments/NaN")
+          .send(testData)
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).toBe("400: id must be a number");
+          });
+      });
+      it("should return 400 if the body is empty", () => {
+        return request(app)
+          .patch("/api/comments/NaN")
+          .send({})
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).toBe("400: body must be - {inc_votes:  <number>}");
+          });
+      });
+      it("should return 400 if the body does not include inc_votes", () => {
+        return request(app)
+          .patch("/api/comments/NaN")
+          .send({ not_votes: 100 })
+          .expect(400)
+          .then(({ body }) => {
+            expect(body.msg).toBe("400: body must be - {inc_votes:  <number>}");
           });
       });
     });

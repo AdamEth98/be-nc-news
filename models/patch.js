@@ -29,3 +29,25 @@ exports.updateArticle = (id, body) => {
       return Promise.reject(err);
     });
 };
+
+exports.updateComment = (id, inc) => {
+  if (!inc) return Promise.reject({ status: 400, msg: "400: body must be - {inc_votes:  <number>}" });
+  const query = `
+                  UPDATE comments
+                  SET votes = votes + $1
+                  WHERE comment_id = $2
+                  RETURNING *;
+                `;
+  return db
+    .query(query, [inc, id])
+    .then(({ rows }) => {
+      if (rows[0]) return rows[0];
+      return Promise.reject({ status: 404, msg: `404: no comment with id ${id}` });
+    })
+    .catch((err) => {
+      console.log(err.code);
+      if (err.code === "22P02") err.msg = `400: id must be a number`;
+
+      return Promise.reject(err);
+    });
+};
