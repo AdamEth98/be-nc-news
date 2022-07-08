@@ -109,3 +109,27 @@ exports.fetchArticles = (sort = "created_at", order = "DESC", topic) => {
       return Promise.reject(err);
     });
 };
+
+exports.fetchUserByUsername = (username) => {
+  return db
+    .query("SELECT * FROM users WHERE username = $1", [username])
+    .then(({ rows }) => {
+      if (rows[0]) return rows[0];
+      return Promise.reject({ status: 404, msg: `404: no user with username ${username}` });
+    })
+    .catch((err) => {
+      return Promise.reject(err);
+    });
+};
+
+exports.fetchApi = () => {
+  return fs
+    .readFile(`${__dirname}/../endpoints.json`, "utf-8")
+    .then((contents) => {
+      const data = JSON.parse(contents);
+      return data;
+    })
+    .catch((err) => {
+      return Promise.reject(err);
+    });
+};

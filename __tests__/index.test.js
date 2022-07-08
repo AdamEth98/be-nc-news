@@ -417,6 +417,53 @@ describe("GET endpoints", () => {
         });
     });
   });
+  describe("GET /api/users/:username", () => {
+    it("returns a status code of 200", () => {
+      return request(app).get("/api/users/butter_bridge").expect(200);
+    });
+    it("returns an object with a key of user", () => {
+      return request(app)
+        .get("/api/users/butter_bridge")
+        .expect(200)
+        .then(({ body }) => {
+          expect(body).toHaveProperty("user");
+        });
+    });
+    it("returns a user with the correct key:value pairs", () => {
+      return request(app)
+        .get("/api/users/butter_bridge")
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.user).toEqual({
+            username: expect.any(String),
+            name: expect.any(String),
+            avatar_url: expect.any(String),
+          });
+        });
+    });
+    it("returns a specific user with the correct values", () => {
+      return request(app)
+        .get("/api/users/butter_bridge")
+        .expect(200)
+        .then(({ body }) => {
+          expect(body.user).toEqual({
+            username: "butter_bridge",
+            name: "jonny",
+            avatar_url: "https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg",
+          });
+        });
+    });
+    describe("error handling", () => {
+      it("returns 404 if the given username does not exist", () => {
+        return request(app)
+          .get("/api/users/notavaliduser")
+          .expect(404)
+          .then(({ body }) => {
+            expect(body.msg).toEqual("404: no user with username notavaliduser");
+          });
+      });
+    });
+  });
 });
 describe("PATCH endpoints", () => {
   // test body
